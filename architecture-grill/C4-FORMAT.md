@@ -80,4 +80,4 @@ flowchart TD
 
 ## Living diagrams
 
-A diagram already in the repo is **living**: edit it in place, changing only what the finding changed. A Container diagram is redrawn when a relationship's *nature* shifts (sync→async, REST→GraphQL) or a container arrives or leaves — routine endpoint additions leave it untouched.
+An existing diagram is **living**: changed only where the finding changed it, never regenerated whole. In home that is an edit in place; in another repo it is the same edit expressed as a delta (see `SKILL.md`). A Container diagram changes when a relationship's *nature* shifts (sync→async, REST→GraphQL) or a container arrives or leaves — routine endpoint additions leave it untouched.

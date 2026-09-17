@@ -11,6 +11,8 @@ Three phases in order: **recon**, **grill**, **write**. Every line written trace
 
 **Stack assumed**: .NET backend(s), containerized, on Azure Red Hat OpenShift (ARO); React + Vite SPA on Azure Static Web Apps. Where the repo differs, name the mismatch and adapt.
 
+**Home** is the repo the run started in. Writes land in home; every other repo stays read-only. A finding whose place is another repo travels back as a **delta** — the exact box, relationships or ADR to add, and the path it applies to — so the user applies it from that repo rather than finding a commit in a repo they were not working in.
+
 ## Altitude
 
 The word governing every judgement here. *Altitude* is how far down the detail goes, and the two failures are symmetric: too high states what any reader would guess, too low restates the code and config and goes stale within a sprint. Documentation earns its place in the band between — the **why** the code cannot carry.
@@ -33,6 +35,8 @@ Read the repo before asking the user anything the repo answers. `*.csproj`, `pac
 - `docs/adr/` — match the convention already in use rather than starting a second one.
 - `docs/architecture/` — any diagram here is **living**: Phase 3 edits it in place.
 - `CONTEXT.md` — the user's own vocabulary; reuse those exact terms.
+
+Where home is the system repo, the sibling service repos carry the same reads. Dispatch one subagent per repo, each returning a compact summary — services, datastores, external calls, hosting — so the merged result reaches the grill while the window stays on the interview rather than on N copies of `Program.cs`. Ask for the folder holding the clones where it is not already obvious.
 
 Recon completes on a summary the user can correct: every service, datastore and external system found, each named.
 
@@ -57,7 +61,12 @@ The grill completes when every service, datastore and external system from recon
 
 ## Phase 3 — Write
 
-**Diagrams.** Levels, files, shapes and the flowchart mechanics live in [`C4-FORMAT.md`](C4-FORMAT.md). Pick the level from what the findings actually changed:
+Where home sits decides the split:
+
+- **Home is a service repo** — its own ADRs and Component diagram are written here. The system-wide Context and Container diagrams belong to the system repo, so they travel as a delta, alongside any ADR reaching past this one service: the frontend↔backend contract, an integration another service depends on, security, compliance, cost.
+- **Home is the system repo** — Context and Container are written here, drawn from recon's merged summary of the sibling service repos.
+
+**Diagrams.** Levels, files, shapes and the flowchart mechanics live in [`C4-FORMAT.md`](C4-FORMAT.md). One Container diagram carries every service in the system boundary, which is why it belongs to the system repo rather than to any one service. Pick the level from what the findings changed:
 
 | Level | Draw or update it when |
 |---|---|
@@ -65,11 +74,11 @@ The grill completes when every service, datastore and external system from recon
 | **Container** | nearly always — the solution-level view, and where most findings land |
 | **Component** | the grill exposed one container as genuinely complex (an authz engine, an orchestrator); confirm with the user before drawing it |
 
-**ADRs.** One per litmus-passing decision, following [`ADR-FORMAT.md`](ADR-FORMAT.md). Where this repo is one service inside a larger system (a `CONTEXT-MAP.md`, a sibling system repo, or ask), say which ADRs belong in that **system repo** instead: anything reaching past this one service — the frontend↔backend contract, an integration another service also depends on, security, compliance, cost. Hand those to the user for placement.
+**ADRs.** One per litmus-passing decision, following [`ADR-FORMAT.md`](ADR-FORMAT.md).
 
 **Report**, in order:
 
 1. The recon summary.
-2. Each ADR, with its path, flagged where it belongs in the system repo.
-3. Each diagram, with its path and a one-line reason that level was the right altitude.
+2. Each ADR and diagram written in home, with its path and — for a diagram — a one-line reason that level was the right altitude.
+3. Each delta, with the repo and path it applies to, ready to paste.
 4. Every grill finding the litmus rejected, each named, so the user sees what was weighed rather than missed.
