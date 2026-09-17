@@ -1,10 +1,32 @@
 # ADR Format
 
-ADRs live in `docs/adr/`, one file per decision: `docs/adr/{yyyy-mm-dd}-{short-slug}.md`. Date-prefixed, not sequentially numbered — avoids collisions across parallel branches/repos.
+## The litmus
 
-If `docs/adr/` already exists with a different convention (sequential numbers, a different template), match the existing one instead of introducing a second standard.
+**All three** must hold, or the decision earns no ADR:
 
-## Template
+1. **Hard to reverse** — changing course later costs real time or real risk.
+2. **Surprising without context** — a future reader asks "why on earth did they do it this way?"
+3. **A real trade-off** — genuine alternatives existed, and one won for specific reasons.
+
+An easily-reversed decision just gets reversed. An unsurprising one prompts no question. One with no alternative records nothing beyond "we did the obvious thing." Where an ADR fails the litmus, a line in the PR description carries it instead.
+
+## What passes
+
+- **Architectural shape** — "This service owns its SQL database; nothing else writes to it directly."
+- **Integration patterns** — "The SPA calls this API synchronously; anything slower than 2s becomes a queued job."
+- **Lock-in choices** — hosting platform, datastore, auth provider, message bus. The ones costing a quarter to swap, rather than every NuGet and npm package.
+- **Boundaries** — what this service does not do, and where that responsibility actually sits.
+- **Deliberate deviations** — anything where a reasonable reader would assume the opposite of what was done.
+- **Invisible constraints** — compliance rules, partner SLAs, cost ceilings that shaped the design and left no trace in the code.
+- **Non-obvious rejections** — GraphQL seriously considered and REST chosen for specific reasons, or the suggestion returns in six months.
+
+## What fails
+
+Business requirements (documented already — link them), anything readable straight from the code, the current API contract (the generated OpenAPI spec owns it; an ADR may own the *policy* around it), and cross-team integration requests (the org's own process owns those).
+
+## The file
+
+`docs/adr/{yyyy-mm-dd}-{short-slug}.md` — date-prefixed, so parallel branches never collide on a number. Where `docs/adr/` already runs a different convention, follow the one in use.
 
 ```md
 ---
@@ -12,58 +34,29 @@ status: accepted
 date: {yyyy-mm-dd}
 ---
 
-# {Short, specific title — the decision itself, not the topic}
+# {The decision itself, specific — not the topic it concerns}
 
 ## Context
 
-{What situation forced this decision? What constraints applied? Enough for
-someone with no memory of the discussion to understand why this came up.}
+{What forced this decision, and under what constraints. Enough that someone
+with no memory of the discussion follows why it came up.}
 
 ## Decision
 
-{What was decided, stated plainly, followed by enough detail to act on it.}
+{What was decided, plainly, then enough detail to act on it.}
 
 ## Considered Options
 
-{Only if the rejected alternatives are worth remembering — omit entirely if
-there was really only one reasonable path.}
+{The rejected alternatives worth remembering, one line each. Where only one
+path was ever reasonable, the section goes.}
 
 ## Consequences
 
 **Good:**
-- {non-obvious upside}
+- {a non-obvious upside}
 
 **Bad:**
-- {non-obvious downside / debt taken on}
+- {a non-obvious downside, or debt taken on}
 ```
 
-Keep it short — a dense paragraph beats five sparse headings. Omit any section that has nothing non-obvious to say; don't fill sections just because the template has them.
-
-`status` is `accepted` by default: these are written up after a decision has already been reached, not proposals awaiting approval. Use `proposed` only if the user says this one genuinely isn't settled yet. Use `superseded by ADR {filename}` when a later decision replaces this one — link both directions.
-
-## When to write one
-
-**All three** must be true, or skip it:
-
-1. **Hard to reverse** — meaningful cost to changing this later.
-2. **Surprising without context** — a future reader would wonder "why did they do it this way?"
-3. **Result of a real trade-off** — genuine alternatives existed and one was picked for specific reasons.
-
-If a decision is easy to reverse, skip it — it'll just get reversed. If it's not surprising, nobody will wonder why. If there was no real alternative, there's nothing to record beyond "we did the obvious thing."
-
-## What qualifies (examples)
-
-- **Architectural shape** — "This service owns its own SQL database; nothing else writes to it directly."
-- **Integration patterns** — "The SPA calls the managed Functions API synchronously; anything slower than 2s runs as a queued background job instead."
-- **Technology/lock-in choices** — hosting platform, datastore, auth provider, message bus. Not every NuGet/npm package — only the ones that would take real effort to swap out.
-- **Boundary decisions** — what this service explicitly does *not* do, and where that responsibility actually lives instead.
-- **Deliberate deviations** — anything where a reasonable reader would assume the opposite of what was actually done.
-- **Invisible constraints** — compliance requirements, partner SLAs, cost ceilings that shaped the design but leave no trace in the code.
-- **Non-obvious rejections** — if GraphQL was seriously considered and REST was chosen for specific reasons, write it down, or someone proposes GraphQL again in six months.
-
-## What doesn't qualify
-
-- Business requirements — already documented elsewhere; link, don't restate.
-- Anything readable directly from the code.
-- The current API contract (endpoints/params/schemas) — that belongs in a generated OpenAPI/schema spec, not an ADR. An ADR can record the *policy* around the contract (versioning strategy, breaking-change rules) — never the current shape of it.
-- Cross-team integration requests — handled by the org's existing integration-request process, not an ADR.
+A dense paragraph beats five sparse headings: sections with nothing non-obvious to say come out. `status` is `accepted` — these record decisions already reached, and `proposed` applies only where the user says this one is still open. A later decision replacing this one sets `superseded by ADR {filename}`, linked both ways.
